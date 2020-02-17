@@ -1,1 +1,1 @@
-# paper5-ancestry-matching
+# paper-ancestry-matching
