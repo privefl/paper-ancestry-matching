@@ -63,8 +63,9 @@
 \begin{document}
 
 
-\title{Insights on ancestry using principal component analysis of genetic data}
-\author{Florian Priv\'e$^{\text{1,}*}$ and Bjarni J. Vilhj\'almsson$^{\text{1}}$}
+\title{Ancestry inference and grouping\\from principal component analysis of genetic data
+}
+\author{Florian Priv\'e$^{\text{1,}*}$}
 
 \date{~ }
 \maketitle
@@ -87,22 +88,65 @@
 
 \newpage
 
-\section{Introduction}
+$^\dag$ Further defined in supplementary section ``Defintions''.
+
+\section*{Introduction}
+
+Why do we need to group individuals in ancestry groups?
+
+There is no consensus on the method to use to infer population structure, but particularly on grouping individuals. 
+
+Why it makes sense to use PCA-based distances -> correction for population structure, and geographical distance.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Material and Methods}
+\section*{Measures of genetic dissimilarity between populations}
+
+We first compare four measures of genetic dissimilarity using populations of the 1000 genomes as example \cite[]{10002015global}. 
+The $F_{ST}$$^\dag$ is an ubiquitous measure of genetic dissimilarity between populations and the first measure we use in this comparison.
+The other three measures compared are distances applied to the PC scores$^\dag$ of the genetic data: 1) the Bhattacharyya distance$^\dag$; 2) the distance between the centers (geometric median$^\dag$) of the two populations; 3) the shorter distance between pairs of PC scores from the two populations.
+The distance between population centers seems to be an appropriate PCA-based distance as this (squared) distance is approximately proportional to the $F_{ST}$ (Figure [TODO]) and provides an appropriate clustering of populations (Figure [TODO]).
+In contrast, the two other Bhattacharyya and shortest distances do not provide as satisfactory results (Figures [TODO]).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\section{Material and Methods}
+
+
+
+\renewcommand{\thefigure}{S\arabic{figure}}
+\setcounter{figure}{0}
+\renewcommand{\thetable}{S\arabic{table}}
+\setcounter{table}{0}
+\renewcommand{\theequation}{S\arabic{equation}}
+\setcounter{equation}{0}
+\renewcommand{\thesection}{S\arabic{section}}
+\setcounter{section}{1}
+
+\section*{Definitions $\dag$}
+
+\begin{itemize}
+	
+	\item The $\boldsymbol{F_{ST}}$ measures the relative amount of genetic variance between populations compared to the total genetic variance within these populations \cite[]{wright1965interpretation}.
+	We use the weighted average formula proposed in \cite{weir1984estimating}, which we now implement in our package bigsnpr \cite[]{prive2017efficient}.
+	
+	\item The {\bf Principal Component (PC) scores} are defined as $U \Delta$, where $U \Delta V^T$ is the singular value decomposition of the (scaled) genotype matrix. They are usually truncated, e.g.\ corresponding to the first 20 principal dimensions only. 
+	
+	\item The {\bf Bhattacharyya distance} between two multivariate normal distributions $\mathcal{N}(\boldsymbol\mu_1,\,\boldsymbol\Sigma_1)$ and $\mathcal{N}(\boldsymbol\mu_2,\,\boldsymbol\Sigma_2)$, which is defined as
+	$D_B={1\over 8}(\boldsymbol\mu_2-\boldsymbol\mu_1)^T \boldsymbol\Sigma^{-1}(\boldsymbol\mu_2-\boldsymbol\mu_1)+{1\over 2}\log \,\left({|\boldsymbol\Sigma| \over \sqrt{|\boldsymbol\Sigma_1| \, |\boldsymbol\Sigma_2|} }\right)$,
+	where $\boldsymbol\Sigma={\boldsymbol\Sigma_1+\boldsymbol\Sigma_2 \over 2}$ and $|M|$ is the absolute value of the determinant of matrix $M$ \cite[]{bhattacharyya1943measure,fukunaga1990introduction}. 
+	The mean and covariance parameters for each population are computed using the robust location and covariance parameters as proposed in \cite{prive2020efficient}.
+	
+	\item The {\bf geometric median} of points is the point that minimizes the sum of all Euclidean distances to these points. We now implement this as function \texttt{geometric\_median} in our R package bigutilsr.
+	
+\end{itemize}
+
+
 
 \subsection{Ancestry matching \label{ancestry}}
 
 We use the 1000 Genomes (1000G) Project data \cite[]{10002015global} to infer the ancestry of individuals from a study dataset using the following steps: 1) we project individuals from the study dataset onto the PCA space computed using the 1000G data \cite[]{prive2020efficient}; 2) we compute the robust center and covariance parameters of the Mahalanobis distance \cite[]{prive2020efficient} for each of the 26 populations of the 1000G data; 3) we compute the Mahalanobis distance for each projected individual of the study data and each population of the 1000G data (using the center and covariance parameters computed previously); 4) we derive p-values from those distances, as they are approximately chi-squared distributed with the number of PCs used for computing the distances as degrees of freedom; 5) we assign each individual the population group with the largest corresponding p-value (smallest distance), but discard individuals whose maximum p-value is less than 0.05 (i.e.\ individuals far from every population of the 1000G data). 
 
-\subsection{Distance between two populations}
-
-To infer a PCA-based genetic distance between two populations, we use the Bhattacharyya distance between two multivariate normal distributions $\mathcal{N}(\boldsymbol\mu_1,\,\boldsymbol\Sigma_1)$ and $\mathcal{N}(\boldsymbol\mu_2,\,\boldsymbol\Sigma_2)$ as defined as
-$$D_B={1\over 8}(\boldsymbol\mu_2-\boldsymbol\mu_1)^T \boldsymbol\Sigma^{-1}(\boldsymbol\mu_2-\boldsymbol\mu_1)+{1\over 2}\log \,\left({|\boldsymbol\Sigma| \over \sqrt{|\boldsymbol\Sigma_1| \, |\boldsymbol\Sigma_2|} }\right)~,$$
-where $\boldsymbol\Sigma={\boldsymbol\Sigma_1+\boldsymbol\Sigma_2 \over 2}$ and $|M|$ is the absolute value of the determinant of matrix $M$ \cite[]{bhattacharyya1943measure,fukunaga1990introduction}. 
-The mean and covariance parameters for each population are computed using the robust center and covariance parameters as in section \ref{ancestry}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -193,7 +237,7 @@ Among Italians, 229 (22\%) were matched to EUR\_TSI, 15 (1.5\%) to EUR\_IBS and 
 
 \section{Discussion}
 
-\noindent[DISCUSS LACK OF CERTAIN POPULATIONS IN 1000G]
+\noindent[DISCUSS LACK OF SOME POPULATIONS IN 1000G]
 
 \noindent[DISCUSS PC-BASED GENETIC DISTANCES BETWEEN POPULATIONS]
 
@@ -215,7 +259,9 @@ Among Italians, 229 (22\%) were matched to EUR\_TSI, 15 (1.5\%) to EUR\_IBS and 
 
 \section*{Acknowledgements}
 
-F.P.\ and B.V.\ are supported by the Danish National Research Foundation (Niels Bohr Professorship to John McGrath).
+\section*{Funding}
+
+F.P.\ is supported by the Danish National Research Foundation (Niels Bohr Professorship to John McGrath).
 
 \section*{Declaration of Interests}
 
