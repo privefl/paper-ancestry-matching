@@ -50,10 +50,9 @@ plot_grid(plotlist = lapply(7:12, function(k) {
     theme(legend.position = "none") +
     coord_equal()
 }))
+seq_PC <- 1:19
 
 thr_Fst <- 0.002  # Fst between TSI and IBS is 0.0015
-nPC <- 19 # 2, 4, 10, 19
-seq_PC <- seq_len(nPC)
 
 all_centers <- bigutilsr::geometric_median(PC.ref[, seq_PC], by_grp = pop_1000G)
 thr_sq_dist <- thr_Fst * (max(dist(all_centers)^2) / 0.16)
@@ -81,14 +80,14 @@ pop2 <- dplyr::case_when(
   TRUE ~ pop
 )
 
-mean(is.na(choose_pop2)) # 1%
+mean(is.na(choose_pop2)) # 1.2%
 round(100 * tapply(is.na(choose_pop2), pop2, mean), 1)
 # Anglo-Irish Isles           Belgium    Central Europe    Eastern Europe
-#               0.4               0.0               0.0               3.3
+#               0.4               0.0               0.0               6.7
 #            France           Germany             Italy       Netherlands
 #               0.0               0.0               1.4               0.0
 #       Scandinavia         SE Europe         SW Europe       Switzerland
-#               0.0               8.5               0.4               0.0
+#               0.0               9.6               0.4               0.0
 
 library(magrittr)
 table(pop2, choose_pop2, exclude = NULL) %>%
@@ -97,19 +96,19 @@ table(pop2, choose_pop2, exclude = NULL) %>%
   xtable::xtable(caption = "Ancestry (left) of POPRES individuals and their matching to 1000G populations (top) by our method. See the description of 1000G populations at \\url{https://www.internationalgenome.org/category/population/}.",
                  label = "tab:ancestry-pred-popres",
                  align = "|l|c|c|c|c|c|c|") %>%
-  print(caption.placement = "top")
+  print(caption.placement = "top", file = "tables/POPRES-matching.tex")
 
 # https://www.internationalgenome.org/category/population/
 #                   EUR_CEU EUR_FIN EUR_GBR EUR_IBS EUR_TSI <NA>
-# Anglo-Irish Isles     132       0     131       0       2    1
+# Anglo-Irish Isles     136       0     127       0       2    1
 # Belgium                43       0       0       0       0    0
-# Central Europe         46       0       0       1       8    0
-# Eastern Europe         28       0       0       0       1    1
+# Central Europe         47       0       0       0       8    0
+# Eastern Europe         27       0       0       0       1    2
 # France                 49       0       3      35       2    0
 # Germany                67       0       3       0       1    0
-# Italy                   2       0       0       9     205    3
+# Italy                   1       0       0      11     204    3
 # Netherlands            13       0       4       0       0    0
 # Scandinavia            13       1       1       0       0    0
-# SE Europe              13       0       0       2      71    8
+# SE Europe              12       0       0       3      70    9
 # SW Europe               1       0       0     261       1    1
 # Switzerland           179       0       0      32      11    0
