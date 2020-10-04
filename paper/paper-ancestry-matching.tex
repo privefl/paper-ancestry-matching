@@ -19,6 +19,7 @@
 \usepackage{hyperref}
 \usepackage{bbm}
 \usepackage{makecell}
+\usepackage{placeins}
 
 \renewcommand{\arraystretch}{1.2}
 
@@ -90,124 +91,45 @@
 
 $^\dag$ Further defined in supplementary section ``Defintions''.
 
-\section*{Introduction}
+\subsection*{Introduction}
 
 Why do we need to group individuals in ancestry groups?
 
-There is no consensus on the method to use to infer population structure, but particularly on grouping individuals. 
+There is no consensus on the method to use to infer population structure, but particularly on grouping individuals.
 
-Why it makes sense to use PCA-based distances -> correction for population structure, and geographical distance.
+Why it makes sense to use PCA-based distances -> correction for population structure, and geographical distance. + Fast
+
+Global ancestry only
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section*{Measures of genetic dissimilarity between populations}
+\subsection*{Measures of genetic dissimilarity between populations}
 
 We first compare four measures of genetic dissimilarity using populations of the 1000 genomes as example \cite[]{10002015global}. 
 The $F_{ST}$$^\dag$ is an ubiquitous measure of genetic dissimilarity between populations and the first measure we use in this comparison.
+We report $F_{ST}$ between the 26 1000G populations in tables S1-S5.
 The other three measures compared are distances applied to the PC scores$^\dag$ of the genetic data: 1) the Bhattacharyya distance$^\dag$; 2) the distance between the centers (geometric median$^\dag$) of the two populations; 3) the shorter distance between pairs of PC scores from the two populations.
-The distance between population centers seems to be an appropriate PCA-based distance as this (squared) distance is approximately proportional to the $F_{ST}$ (Figure [TODO]) and provides an appropriate clustering of populations (Figure [TODO]).
-In contrast, the two other Bhattacharyya and shortest distances do not provide as satisfactory results (Figures [TODO]).
+The distance between population centers seems to be an appropriate PCA-based distance as this (squared) distance is approximately proportional to the $F_{ST}$ (Figure \ref{fig:compare-dist}) and provides an appropriate clustering of populations (Figure \ref{fig:heatmap2}).
+In contrast, the two other Bhattacharyya and shortest distances do not provide as satisfactory results (Figures \ref{fig:heatmap1} and \ref{fig:heatmap3}). For example, using , African Caribbeans in Barbados (ACB) and Americans of African Ancestry in SW USA (ASW) are close to Northern European populations (FIN, CEU and GBR) when using the Bhattacharyya distance.
+Using the shortest distance between pairs of individuals in two different populations is very sensitive to outliers being far from the other individuals in the population.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%\section{Material and Methods}
+\subsection*{PCA-based ancestry inference}
 
+We project the dataset of interest (either UKBB or POPRES) onto the PCA space of the 1000G data using the fast tools developed in \cite{prive2020efficient}.
+We recall that this uses a correction for shrinkage in projected PC scores, which has been shown to be particularly important when using PC scores for ancestry estimation \cite[]{zhang2020fast}. 
+Based on the results of the previous section, we propose to assign individual ancestry to one of the 26 1000G populations based on the minimum distance to their respective center (geometric median$^\dag$). 
+Since we showed previously that (squared) distances in the PCA space are proportional to $F_{ST}$, we can set a threshold on these distances that would correspond approximately to an $F_{ST}$ of e.g. 0.002. This threshold is close to the dissimilarity between Spanish and Italian people ($F_{ST}$(IBS, TSI) of 0.0015).
+When an individual is not close enough to any of the 26 1000G populations, we leave its ancestry inference as unknown.
 
-
-\renewcommand{\thefigure}{S\arabic{figure}}
-\setcounter{figure}{0}
-\renewcommand{\thetable}{S\arabic{table}}
-\setcounter{table}{0}
-\renewcommand{\theequation}{S\arabic{equation}}
-\setcounter{equation}{0}
-\renewcommand{\thesection}{S\arabic{section}}
-\setcounter{section}{1}
-
-\section*{Definitions $\dag$}
-
-\begin{itemize}
-	
-	\item The $\boldsymbol{F_{ST}}$ measures the relative amount of genetic variance between populations compared to the total genetic variance within these populations \cite[]{wright1965interpretation}.
-	We use the weighted average formula proposed in \cite{weir1984estimating}, which we now implement in our package bigsnpr \cite[]{prive2017efficient}.
-	
-	\item The {\bf Principal Component (PC) scores} are defined as $U \Delta$, where $U \Delta V^T$ is the singular value decomposition of the (scaled) genotype matrix. They are usually truncated, e.g.\ corresponding to the first 20 principal dimensions only. 
-	
-	\item The {\bf Bhattacharyya distance} between two multivariate normal distributions $\mathcal{N}(\boldsymbol\mu_1,\,\boldsymbol\Sigma_1)$ and $\mathcal{N}(\boldsymbol\mu_2,\,\boldsymbol\Sigma_2)$, which is defined as
-	$D_B={1\over 8}(\boldsymbol\mu_2-\boldsymbol\mu_1)^T \boldsymbol\Sigma^{-1}(\boldsymbol\mu_2-\boldsymbol\mu_1)+{1\over 2}\log \,\left({|\boldsymbol\Sigma| \over \sqrt{|\boldsymbol\Sigma_1| \, |\boldsymbol\Sigma_2|} }\right)$,
-	where $\boldsymbol\Sigma={\boldsymbol\Sigma_1+\boldsymbol\Sigma_2 \over 2}$ and $|M|$ is the absolute value of the determinant of matrix $M$ \cite[]{bhattacharyya1943measure,fukunaga1990introduction}. 
-	The mean and covariance parameters for each population are computed using the robust location and covariance parameters as proposed in \cite{prive2020efficient}.
-	
-	\item The {\bf geometric median} of points is the point that minimizes the sum of all Euclidean distances to these points. We now implement this as function \texttt{geometric\_median} in our R package bigutilsr.
-	
-\end{itemize}
-
-
-
-\subsection{Ancestry matching \label{ancestry}}
-
-We use the 1000 Genomes (1000G) Project data \cite[]{10002015global} to infer the ancestry of individuals from a study dataset using the following steps: 1) we project individuals from the study dataset onto the PCA space computed using the 1000G data \cite[]{prive2020efficient}; 2) we compute the robust center and covariance parameters of the Mahalanobis distance \cite[]{prive2020efficient} for each of the 26 populations of the 1000G data; 3) we compute the Mahalanobis distance for each projected individual of the study data and each population of the 1000G data (using the center and covariance parameters computed previously); 4) we derive p-values from those distances, as they are approximately chi-squared distributed with the number of PCs used for computing the distances as degrees of freedom; 5) we assign each individual the population group with the largest corresponding p-value (smallest distance), but discard individuals whose maximum p-value is less than 0.05 (i.e.\ individuals far from every population of the 1000G data). 
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Results}
-
-
-\subsection{Ancestry matching}
-
+[TODO: CHANGE NUMBERS]
 We performed ancestry estimation of the individuals in the UK Biobank using the 1000G data (Section \ref{ancestry}), discarding individuals with unknown ancestry or mixed ancestry.
 We did not infer ancestry for 15.9\% of UK Biobank that had a maximum p-value smaller than 0.05 (Figure \ref{fig:ancestry-pval}). 
 More precisely, among ``White'', ``British'' and ``Irish'' ancestries, this represented respectively 20.2\%, 11.1\% and 20.3\%, while this represented between 44.5\% (``Chinese'') and 74.3\% (``Bangladeshi'') for other populations. 
 In other words, 3 out of 4 of the UK Biobank individual who self-reports as ``Bangladeshi'' could not be attributed to any 1000G population, although 1000G data includes several ``Bengali in Bangladesh'' (SAS\_BEB).
 Only 10 people out of 401,048 were wrongly classified in ``super'' population of the 1000G; e.g.\ one Chinese person was classified as European by our method (Table \ref{tab:ancestry-pred}). 
 Moreover, our method is able to accurately differentiate between sub-continental populations such as differentiating between Pakistani, Bangladeshi and Chinese people (Table \ref{tab:ancestry-pred}).
-
-% latex table generated in R 3.6.0 by xtable 1.8-4 package
-% Mon Oct 21 15:14:34 2019
-\begin{table}[ht]
-\centering
-\caption{Self-reported ancestry (top) of UKBB individuals and their matching to 1000G populations (left) by our method. See the description of 1000G populations at \url{https://www.internationalgenome.org/category/population/}.} 
-\label{tab:ancestry-pred}
-\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|}
-  \hline
- & British & Irish & White & Other White & Indian & Pakistani & Bangladeshi & Chinese & Other Asian & Caribbean & African & Other Black & NA \\ 
-  \hline
-AFR\_ACB &  &  &  &  &  &  &  &  &  & 1832 & 580 & 31 & 259 \\ 
-  AFR\_ASW &  &  &  &  &  &  &  &  &  & 315 & 13 & 10 & 39 \\ 
-  AFR\_ESN &  &  &  &  &  &  &  &  &  &  & 155 & 1 & 29 \\ 
-  AFR\_GWD &  &  &  &  &  &  &  &  &  &  & 20 &  & 4 \\ 
-  AFR\_LWK &  &  &  &  &  &  &  &  &  &  & 34 &  & 4 \\ 
-  AFR\_MSL &  &  &  &  &  &  &  &  &  &  & 26 &  &  \\ 
-  AFR\_YRI &  &  &  &  &  &  &  &  &  & 5 & 469 & 3 & 81 \\ 
-   \hline
-AMR\_CLM & 1 &  &  & 50 &  &  &  &  &  &  &  &  & 142 \\ 
-  AMR\_MXL &  &  & 1 & 3 &  &  &  &  &  &  &  &  & 20 \\ 
-  AMR\_PEL &  &  &  & 2 &  &  &  &  &  &  &  &  & 19 \\ 
-   \hline
-EAS\_CDX &  &  &  &  &  &  &  & 2 &  &  &  &  & 1 \\ 
-  EAS\_CHB & 1 &  &  &  &  &  &  & 445 & 10 &  &  &  & 7 \\ 
-  EAS\_CHS &  &  &  &  &  &  &  & 380 & 9 &  &  &  & 21 \\ 
-  EAS\_JPT &  &  &  &  &  &  &  & 3 & 25 &  &  &  & 122 \\ 
-  EAS\_KHV &  &  &  &  &  &  &  & 4 & 16 &  &  &  & 22 \\ 
-   \hline
-EUR\_CEU & 325725 & 6675 & 350 & 4855 &  &  &  & 1 &  &  &  &  & 1363 \\ 
-  EUR\_FIN & 2 &  &  & 118 &  &  &  &  &  &  &  &  & 1 \\ 
-  EUR\_GBR & 57497 & 3486 & 79 & 454 &  &  &  &  &  &  & 1 &  & 244 \\ 
-  EUR\_IBS & 28 &  & 4 & 452 &  &  &  &  &  &  &  &  & 8 \\ 
-  EUR\_TSI & 25 &  & 1 & 177 &  &  &  &  &  &  &  &  & 5 \\ 
-   \hline
-SAS\_BEB &  &  &  &  & 11 &  & 57 &  &  &  &  &  & 7 \\ 
-  SAS\_GIH &  &  &  &  & 334 &  &  &  & 1 &  &  &  & 4 \\ 
-  SAS\_ITU & 1 &  &  &  & 314 & 1 &  &  & 264 & 3 &  &  & 82 \\ 
-  SAS\_PJL & 1 &  &  &  & 1749 & 767 &  &  & 104 & 2 &  &  & 177 \\ 
-  SAS\_STU &  &  &  &  & 38 &  &  &  & 185 &  &  &  & 40 \\ 
-   \hline
-NA & 47748 & 2594 & 110 & 9705 & 3270 & 980 & 164 & 669 & 1133 & 2140 & 1906 & 73 & 6970 \\ 
-   \hline
-\end{tabular}
-\end{table}
-
-\noindent[OKAY TO CLASSIFY SOME OTHER WHITE AS CENTRAL/SOUTH AMERICANS? MAYBE, SEE NEXT SUBSECTION]
 
 We also  applied our ancestry detection technique to projected individuals from other datasets.
 When applied to the European individuals of the POPRES data \cite[]{nelson2008population}, we show that 56.5\% of individuals could not be matched to one of the 26 populations of the 1000G data (Table \ref{tab:ancestry-pred-popres}). 
@@ -219,32 +141,67 @@ Among UK individuals, 5397 (79.9\%) were matched to either ``Utah Residents with
 Among Finns, 1543 (62.4\%) were matched to ``Finnish in Finland'' (EUR\_FIN), 6 (0.3\%) to other European populations, and 922 (37.3\%) could not be matched.
 Among Italians, 229 (22\%) were matched to EUR\_TSI, 15 (1.5\%) to EUR\_IBS and 795 (76.5\%) could not be matched (Table \ref{tab:ancestry-pred-celiac}).
 
-\noindent[USE FIG S1 TO JUSTIFY 5\% THRESHOLD?]
 
-\subsection{Distance between 1000G populations}
+% latex table generated in R 3.6.1 by xtable 1.8-4 package
+% Sun Sep 27 11:26:46 2020
+\begin{table}[ht]
+	\centering
+	\caption{Self-reported ancestry (left) of UKBB individuals and their matching to 1000G continental populations (top) by our method. See the description of 1000G populations at \url{https://www.internationalgenome.org/category/population/}.} 
+	\label{tab:infer-UKBB-superpop}
+	\begin{tabular}{|l|c|c|c|c|c|c|}
+		\hline
+		& AFR & AMR & EAS & EUR & SAS & Not matched \\ 
+		\hline
+		British & 2 &  & 1 & 421457 & 6 & 9548 \\ 
+		Irish &  &  &  & 12328 &  & 425 \\ 
+		White & 1 & 1 & 1 & 499 &  & 43 \\ 
+		Other White &  & 40 &  & 11334 & 1 & 4440 \\ 
+		\hline
+		Indian &  &  &  & 5 & 4922 & 789 \\ 
+		Pakistani &  &  &  &  & 1421 & 327 \\ 
+		Bangladeshi &  &  &  &  & 217 & 4 \\ 
+		Chinese &  &  & 1453 & 1 &  & 50 \\ 
+		Other Asian & 1 &  & 279 &  & 939 & 528 \\ 
+		\hline
+		Caribbean & 3848 &  &  &  & 25 & 424 \\ 
+		African & 2633 &  &  & 1 &  & 570 \\ 
+		Other Black & 74 &  &  &  & 2 & 42 \\ 
+		\hline
+		Asian or Asian British &  &  & 2 &  & 20 & 20 \\ 
+		Black or Black British & 20 &  &  & 2 &  & 4 \\ 
+		White and Black Caribbean & 24 & 1 &  & 8 & 1 & 563 \\ 
+		White and Black African & 5 &  &  & 6 &  & 391 \\ 
+		White and Asian &  & 1 & 2 & 27 & 26 & 746 \\ 
+		\hline
+		Unknown  & 835 & 173 & 576 & 2296 & 633 & 3307 \\ 
+		\hline
+	\end{tabular}
+\end{table}
 
-\begin{figure}[!htpb]
-	\centerline{\includegraphics[width=0.9\textwidth]{hclust-pop-1000G.png}}
-	\caption{Dendrogram of PC-based distances between populations of the 1000G data. See the description of 1000G populations at \url{https://www.internationalgenome.org/category/population/}. \label{fig:ancestry-dist}}
-\end{figure}
-
-\noindent[WHAT TO SAY ABOUT THIS? DISTANCE INFORMATIVE? SAS CLOSER TO EUR THAN EAS?]
-
-
-\noindent[DO THIS IN OTHER DATASETS? COULD SHOW THAT EAST EUROPEAN FAR FROM 1000G POPS IN POPRES. WHAT ABOUT UKBB?]
+We also test the approach proposed in \cite{zhang2020fast} which consists of finding the 20 nearest neighbors in 1000G and computing the frequency of (super) population membership, weighted by the inverse distance to these 20 closest 1000G individuals. When this probability is less than 0.875, they leave the ancestry as unknown, aiming at discarding admixed individuals.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Discussion}
+\subsection*{PCA-based ancestry grouping}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.95\textwidth]{UKBB-matched-ancestry}}
+	\caption{ \label{fig:grouping}}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{Discussion}
+
+Global measures vs relative measures.
+
+Contrast with Mahalanobis distance proposed before.
 
 \noindent[DISCUSS LACK OF SOME POPULATIONS IN 1000G]
 
 \noindent[DISCUSS PC-BASED GENETIC DISTANCES BETWEEN POPULATIONS]
 
 \noindent[IMPLICATIONS FOR PRS?]
-
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -276,76 +233,133 @@ The authors declare no competing interests.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\newpage
 \section*{Supplementary Materials}
 
 \renewcommand{\thefigure}{S\arabic{figure}}
 \setcounter{figure}{0}
 \renewcommand{\thetable}{S\arabic{table}}
 \setcounter{table}{0}
+\renewcommand{\theequation}{S\arabic{equation}}
+\setcounter{equation}{0}
+\renewcommand{\thesection}{S\arabic{section}}
+\setcounter{section}{1}
+
+\subsection*{Definitions $\dag$}
+
+\begin{itemize}
+	
+	\item The $\boldsymbol{F_{ST}}$ measures the relative amount of genetic variance between populations compared to the total genetic variance within these populations \cite[]{wright1965interpretation}.
+	We use the weighted average formula proposed in \cite{weir1984estimating}, which we now implement in our package bigsnpr \cite[]{prive2017efficient}.
+	
+	\item The {\bf Principal Component (PC) scores} are defined as $U \Delta$, where $U \Delta V^T$ is the singular value decomposition of the (scaled) genotype matrix. They are usually truncated, e.g.\ corresponding to the first 20 principal dimensions only. 
+	
+	\item The {\bf Bhattacharyya distance} between two multivariate normal distributions $\mathcal{N}(\boldsymbol\mu_1,\,\boldsymbol\Sigma_1)$ and $\mathcal{N}(\boldsymbol\mu_2,\,\boldsymbol\Sigma_2)$, which is defined as
+	$D_B={1\over 8}(\boldsymbol\mu_2-\boldsymbol\mu_1)^T \boldsymbol\Sigma^{-1}(\boldsymbol\mu_2-\boldsymbol\mu_1)+{1\over 2}\log \,\left({|\boldsymbol\Sigma| \over \sqrt{|\boldsymbol\Sigma_1| \, |\boldsymbol\Sigma_2|} }\right)$,
+	where $\boldsymbol\Sigma={\boldsymbol\Sigma_1+\boldsymbol\Sigma_2 \over 2}$ and $|M|$ is the absolute value of the determinant of matrix $M$ \cite[]{bhattacharyya1943measure,fukunaga1990introduction}. 
+	The mean and covariance parameters for each population are computed using the robust location and covariance parameters as proposed in \cite{prive2020efficient}.
+	
+	\item The {\bf geometric median} of points is the point that minimizes the sum of all Euclidean distances to these points. We now implement this as function \texttt{geometric\_median} in our R package bigutilsr.
+	
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%\clearpage
+\clearpage
 
-%\subsection*{Supplementary figures}
+\subsection*{Location of 1000G populations}
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%\vspace*{1em}
-
-\begin{figure}[!htpb]
-\centerline{\includegraphics[width=0.8\textwidth]{hist-pval-max.pdf}}
-\caption{Maximum p-values based on robust Mahalabonis distances of UK Biobank individuals from each of the 26 1000G populations.
-\label{fig:ancestry-pval}}
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.95\textwidth]{map-1000G}}
+	\caption{ \label{fig:map}}
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% latex table generated in R 3.6.0 by xtable 1.8-4 package
-% Sat Oct 19 00:18:24 2019
-\begin{table}[ht]
-\centering
-\caption{Ancestry (left) of POPRES individuals and their matching to 1000G populations (top) by our method. See the description of 1000G populations at \url{https://www.internationalgenome.org/category/population/}.} 
-\label{tab:ancestry-pred-popres}
-\begin{tabular}{|l|c|c|c|c|c|}
-  \hline
- & EUR\_CEU & EUR\_GBR & EUR\_IBS & EUR\_TSI & NA \\ 
-  \hline
-Anglo-Irish Isles & 159 & 57 &  &  & 50 \\ 
-  Belgium & 28 & 3 &  &  & 12 \\ 
-  Central Europe & 3 &  &  & 1 & 51 \\ 
-  Eastern Europe & 2 &  &  &  & 28 \\ 
-  France & 14 &  & 13 &  & 62 \\ 
-  Germany & 37 &  &  &  & 34 \\ 
-  Italy &  &  & 12 & 19 & 188 \\ 
-  Netherlands & 10 & 2 &  &  & 5 \\ 
-  Scandinavia & 5 &  &  &  & 10 \\ 
-  SE Europe &  &  &  & 5 & 89 \\ 
-  SW Europe &  &  & 193 &  & 71 \\ 
-  Switzerland & 33 & 1 & 6 &  & 182 \\ 
-   \hline
-\end{tabular}
-\end{table}
+\clearpage
 
-% latex table generated in R 3.6.0 by xtable 1.8-4 package
-% Sat Oct 19 00:28:24 2019
-\begin{table}[ht]
-\centering
-\caption{Ancestry (left) of Celiac individuals and their matching to 1000G populations (top) by our method. See the description of 1000G populations at \url{https://www.internationalgenome.org/category/population/}.} 
-\label{tab:ancestry-pred-celiac}
-\begin{tabular}{|l|c|c|c|c|c|c|c|}
-  \hline
- & AMR\_MXL & EUR\_CEU & EUR\_FIN & EUR\_GBR & EUR\_IBS & EUR\_TSI & NA \\ 
-  \hline
-Finland &  & 4 & 1543 & 1 &  & 1 & 922 \\ 
-  Italy &  &  &  &  & 15 & 229 & 795 \\ 
-  Netherlands &  & 802 &  & 382 & 1 &  & 463 \\ 
-  UK & 1 & 2865 & 1 & 2532 & 4 & 5 & 1346 \\ 
-   \hline
-\end{tabular}
-\end{table}
+\subsection*{Measures of genetic dissimilarity between populations}
+
+\input{../tables/fst-values-AFR}
+\input{../tables/fst-values-AMR}
+\input{../tables/fst-values-EAS}
+\input{../tables/fst-values-EUR}
+\input{../tables/fst-values-SAS}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.8\textwidth]{compare-dist-to-Fst}}
+	\caption{Comparing Fst to different distances in the PCA space between pairs of the 26 1000G populations. \label{fig:compare-dist}}
+\end{figure}
+
+\begin{figure}[h]
+\centerline{\includegraphics[width=0.8\textwidth]{heatmap-Fst-1000G}}
+\caption{Heatmap with clustering based on the $F_{ST}$ between pairs of the 26 1000G populations. Corresponding values are reported in table S1-S5. \label{fig:heatmap0}}
+\end{figure}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.8\textwidth]{heatmap-bhattacharyya-1000G}}
+	\caption{Heatmap with clustering based on the Bhattacharyya distances between pairs of the 26 1000G populations. \label{fig:heatmap1}}
+\end{figure}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.8\textwidth]{heatmap-centers-1000G}}
+	\caption{Heatmap with clustering based on the distances between centers of pairs of the 26 1000G populations. \label{fig:heatmap2}}
+\end{figure}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.8\textwidth]{heatmap-closest-1000G}}
+	\caption{Heatmap with clustering based on the shortest distances between pairs of the 26 1000G populations. \label{fig:heatmap3}}
+\end{figure}
+
+\FloatBarrier
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{PCA-based ancestry inference}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.95\textwidth]{proj-UKBB-to-1000G}}
+	\caption{ \label{fig:proj-UKBB}}
+\end{figure}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.95\textwidth]{UKBB-mismatch}}
+	\caption{ \label{fig:mismatch}}
+\end{figure}
+
+\input{../tables/matched-pop-KNN}
+\input{../tables/infer-UKBB-pop}
+\input{../tables/POPRES-matching}
+
+
+\FloatBarrier
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{PCA-based ancestry grouping}
+
+\input{../tables/ancestry-groups}
+
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.8\textwidth]{hist-dist-British}}
+	\caption{ \label{fig:hist1}}
+\end{figure}
+\begin{figure}[h]
+	
+\centerline{\includegraphics[width=0.8\textwidth]{hist-dist-GBR}}
+\caption{ \label{fig:hist2}}
+\end{figure}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.8\textwidth]{hist-dist-overall-center}}
+	\caption{ \label{fig:hist3}}
+\end{figure}
+
+\FloatBarrier
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 
 \end{document}
