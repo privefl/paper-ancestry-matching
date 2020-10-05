@@ -196,7 +196,7 @@ all_prob <- do.call("rbind", lapply(rows_along(proj2), function(i) {
 ind_ok <- which(all_prob > 0.875, arr.ind = TRUE)
 pred_pop <- rep(NA, nrow(proj2))
 pred_pop[ind_ok[, 1]] <- levels(super_pop)[ind_ok[, 2]]
-table(pred_pop, exclude = NULL)
+table(pred_pop, exclude = NULL)  # 2225 missing
 
 library(magrittr)
 table(pop_UKBB, pred_pop, exclude = NULL) %>%

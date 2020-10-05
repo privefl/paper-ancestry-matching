@@ -79,7 +79,7 @@
 \item \url{florian.prive.21@gmail.com}
 \end{itemize}
 
-\newpage
+\vspace*{5em}
 
 \abstract{
 }
@@ -123,28 +123,26 @@ Based on the results of the previous section, we propose to assign individual an
 Since we showed previously that (squared) distances in the PCA space are proportional to $F_{ST}$, we can set a threshold on these distances that would correspond approximately to an $F_{ST}$ of e.g. 0.002. This threshold is close to the dissimilarity between Spanish and Italian people ($F_{ST}$(IBS, TSI) of 0.0015).
 When an individual is not close enough to any of the 26 1000G populations, we leave its ancestry inference as unknown.
 
-[TODO: CHANGE NUMBERS]
-We performed ancestry estimation of the individuals in the UK Biobank using the 1000G data (Section \ref{ancestry}), discarding individuals with unknown ancestry or mixed ancestry.
-We did not infer ancestry for 15.9\% of UK Biobank that had a maximum p-value smaller than 0.05 (Figure \ref{fig:ancestry-pval}). 
-More precisely, among ``White'', ``British'' and ``Irish'' ancestries, this represented respectively 20.2\%, 11.1\% and 20.3\%, while this represented between 44.5\% (``Chinese'') and 74.3\% (``Bangladeshi'') for other populations. 
-In other words, 3 out of 4 of the UK Biobank individual who self-reports as ``Bangladeshi'' could not be attributed to any 1000G population, although 1000G data includes several ``Bengali in Bangladesh'' (SAS\_BEB).
-Only 10 people out of 401,048 were wrongly classified in ``super'' population of the 1000G; e.g.\ one Chinese person was classified as European by our method (Table \ref{tab:ancestry-pred}). 
-Moreover, our method is able to accurately differentiate between sub-continental populations such as differentiating between Pakistani, Bangladeshi and Chinese people (Table \ref{tab:ancestry-pred}).
+We first perform ancestry estimation for the individuals in the UK Biobank$^\dag$.
+These individuals seem to originate from all over the world when we project onto the PCA space of the 1000G (Figure \ref{fig:proj-UKBB}). 
+Self-reported ancestry (Field 21000) is available for almost all individuals, with only 1.6\% with unknown or mixed ancestry.
+Based on the threshold defined before, we could not infer ancestry for 4.6\% of the individuals.
+More precisely, among ``British'', ``Irish'' and ``White'' ancestries, this represented respectively 2.2\%, 3.3\% and 7.9\% (Tables \ref{tab:infer-UKBB-superpop} and \ref{tab:ancestry-fine-pred}). This also represented 3.3\% for ``Chinese'', 13.8\% for ``Indian'' and 17.8\% for ``African'' ancestries. 
+Finally, mixed ancestries were particularly difficult to match to any of the 1000G populations, e.g. 97.3\% unmatched within `White and Black African` and 93.0\% within `White and Asian`.
+Only 47 individuals were wrongly classified in ``super'' population of the 1000G; e.g.\ six ``British'' were classified as South Asians, one ``Chinese'' as European and 25 ``Caribbean'' as South Asian by our method (Table \ref{tab:infer-UKBB-superpop}). 
+However, when comparing the location of these individuals on the PCA space computed in the UK Biobank \cite[]{bycroft2017genome} to the rest of individuals, it seemed more probable that the self-reported ancestry is wrong and not our ancestry estimate (Figure \ref{fig:mismatch}).
 
-We also  applied our ancestry detection technique to projected individuals from other datasets.
-When applied to the European individuals of the POPRES data \cite[]{nelson2008population}, we show that 56.5\% of individuals could not be matched to one of the 26 populations of the 1000G data (Table \ref{tab:ancestry-pred-popres}). 
-This is particularly dramatic for all East-Europeans, whose only 11 people could be matched out of 179 (6.1\%).
-Moreover, even though 1000G data include several ``Toscani in Italia'' (EUR\_TSI), we were able to match 14.2\% of Italians only.
-Nevertheless, all individuals that we could match were identified as of European ancestry. We could also identify accurately sub-regions of Europe; e.g.\ all Spanish and Portugese individuals that we could match (73.1\%) were identified as ``Iberian Population in Spain'' (EUR\_IBS, Table \ref{tab:ancestry-pred-popres}).
-Finally, we also projected and matched people from a case-control cohort for celiac disease composed of four European countries: Italy, the Netherlands, the UK and Finland \cite[]{dubois2010multiple}. 
-Among UK individuals, 5397 (79.9\%) were matched to either ``Utah Residents with Northern and Western European Ancestry'' (EUR\_CEU) or ``British in England and Scotland'' (EUR\_GBR), 10 (0.2\%) to other European populations, 1 to ``Mexican Ancestry from Los Angeles USA'' (AMR\_MXL) and 1346 (19.9\%) could not be matched (Table \ref{tab:ancestry-pred-celiac}).
-Among Finns, 1543 (62.4\%) were matched to ``Finnish in Finland'' (EUR\_FIN), 6 (0.3\%) to other European populations, and 922 (37.3\%) could not be matched.
-Among Italians, 229 (22\%) were matched to EUR\_TSI, 15 (1.5\%) to EUR\_IBS and 795 (76.5\%) could not be matched (Table \ref{tab:ancestry-pred-celiac}).
+We also test the approach proposed in \cite{zhang2020fast} which consists of finding the 20 nearest neighbors in 1000G and computing the frequency of (super) population membership, weighted by the inverse distance to these 20 closest 1000G individuals. When this probability is less than 0.875, they leave the ancestry as unknown, aiming at discarding admixed individuals.
+Less than 0.5\% could not be matched by their method (Table \ref{tab:ancestry-pred-kNN}).
+Of note, they could match much more admixed individuals, whereas they set a high probably aiming at discarding such admixed individuals. 
+Morever, there are many more discrepancies between their method and the self-reported ancestry in the UK Biobank (Table \ref{tab:ancestry-pred-kNN}) compared to the previous results with our method (Table  \ref{tab:infer-UKBB-superpop}).
+Finally, our method is able to accurately differentiate between sub-continental populations such as differentiating between Pakistani, Bangladeshi and Chinese people (Table \ref{tab:ancestry-fine-pred}).
+We also applied our ancestry detection technique to the European individuals of the POPRES data \cite[]{nelson2008population}. 
+Only 16 out of the 1385 individuals (1.2\%) could not be matched, of which 11 were from East or South-East Europe (Table \ref{tab:ancestry-pred-popres}).
+Note that all individuals that we could match were identified as of European ancestry. 
+We could also identify accurately sub-regions of Europe; e.g.\ 261 out of 264 Spanish and Portugese individuals were identified as ``Iberian Population in Spain'' (EUR\_IBS, Table \ref{tab:ancestry-pred-popres}).
 
-
-% latex table generated in R 3.6.1 by xtable 1.8-4 package
-% Sun Sep 27 11:26:46 2020
-\begin{table}[ht]
+\begin{table}[htb]
 	\centering
 	\caption{Self-reported ancestry (left) of UKBB individuals and their matching to 1000G continental populations (top) by our method. See the description of 1000G populations at \url{https://www.internationalgenome.org/category/population/}.} 
 	\label{tab:infer-UKBB-superpop}
@@ -178,13 +176,25 @@ Among Italians, 229 (22\%) were matched to EUR\_TSI, 15 (1.5\%) to EUR\_IBS and 
 	\end{tabular}
 \end{table}
 
-We also test the approach proposed in \cite{zhang2020fast} which consists of finding the 20 nearest neighbors in 1000G and computing the frequency of (super) population membership, weighted by the inverse distance to these 20 closest 1000G individuals. When this probability is less than 0.875, they leave the ancestry as unknown, aiming at discarding admixed individuals.
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection*{PCA-based ancestry grouping}
 
-\begin{figure}[h]
+Finally, we show how to use our ancestry inference method for grouping genetically homogeneous individuals.
+We identify 3 possible ways of doing this.
+The first approach is to simply match identify individuals that are closed enough to one or more of the 1000G populations, as described in this paper.
+We can e.g. define a British ancestry cluster by identifying individuals close enough to the GBR 1000G population (Figure \ref{fig:hist1}).
+Likewise, we can define ``AFR'', ``AMR'', ``EAS'' and ``SAS'' clusters of individuals who are close enough to any of the corresponding 1000G populations.
+We can then verify that these clusters define distinct sets of homogeneous individuals (Figure \ref{fig:grouping}).
+Another solution, which does not require projecting individuals to the 1000G, but does require computing PC scores in the dataset instead, would consist in using reported ancestries and internal PC scores.
+Then, a British ancestry cluster could be defined by individuals close enough to the center of the people reported as ``British''  (Figure \ref{fig:hist2}).
+We can also define an ``AFR2'' cluster if close enough to the center of either ``Caribbean'', ``African'' or ``Other Black'' individuals, ``EAS2'' if close to the ``Chinese'' cluster, and ``SAS2'' if close to either ``Indian'', ``Pakistani'' or ``Bangladeschi'' clusters.
+This enables to capture a larger set of individuals who are close enough to British people (e.g. Irish people), while discarding individuals whose genetic ancestry is not really ``British''. 
+A third solution, useful when we know that the data is composed of an overdominant ancestry is to keep individuals who are close enough to the center of all individuals (Figure \ref{fig:hist3}).
+We recall the we are using the geometric median as such center, which is robust to outliers.
+Overall, all these techniques approximately identify the same amount of people (Table \ref{tab:ancestry-groups}).
+
+\begin{figure}[htb]
 	\centerline{\includegraphics[width=0.95\textwidth]{UKBB-matched-ancestry}}
 	\caption{ \label{fig:grouping}}
 \end{figure}
@@ -196,6 +206,8 @@ We also test the approach proposed in \cite{zhang2020fast} which consists of fin
 Global measures vs relative measures.
 
 Contrast with Mahalanobis distance proposed before.
+
+Number of PCs -> 2 is not enough
 
 \noindent[DISCUSS LACK OF SOME POPULATIONS IN 1000G]
 
@@ -244,7 +256,9 @@ The authors declare no competing interests.
 \renewcommand{\thesection}{S\arabic{section}}
 \setcounter{section}{1}
 
-\subsection*{Definitions $\dag$}
+\subsection*{Definitions $\dag$ and methods}
+
+[ALSO DESCRIBE 1000G DATA]
 
 \begin{itemize}
 	
@@ -259,6 +273,10 @@ The authors declare no competing interests.
 	The mean and covariance parameters for each population are computed using the robust location and covariance parameters as proposed in \cite{prive2020efficient}.
 	
 	\item The {\bf geometric median} of points is the point that minimizes the sum of all Euclidean distances to these points. We now implement this as function \texttt{geometric\_median} in our R package bigutilsr.
+	
+	\item The {\bf UK Biobank} is a large cohort of half a million individuals from the UK, for which we have access to both genotypes and multiple phenotypes (\url{https://www.ukbiobank.ac.uk/}).
+	We apply some quality control filters to the genotyped data; we remove individuals with more than 10\% missing values, variants with more than 1\% missing values, variants having a minor allele frequency < 0.01, variants with P-value of the Hardy-Weinberg exact test < $10^{-50}$, and non-autosomal variants. 
+	This results in 488,371 individuals and 504,139 genetic variants.
 	
 \end{itemize}
 
@@ -318,12 +336,12 @@ The authors declare no competing interests.
 
 \begin{figure}[h]
 	\centerline{\includegraphics[width=0.95\textwidth]{proj-UKBB-to-1000G}}
-	\caption{ \label{fig:proj-UKBB}}
+	\caption{First 18 PC scores of the 1000G data (in black), onto which the UK Biobank data has been projected (in red). \label{fig:proj-UKBB}}
 \end{figure}
 
 \begin{figure}[h]
 	\centerline{\includegraphics[width=0.95\textwidth]{UKBB-mismatch}}
-	\caption{ \label{fig:mismatch}}
+	\caption{PC scores (computed in the UK Biobank) colored by self-reported ancestry. On the left, these are 50,000 random individuals. On the right, these are the 47 individuals with some discrepancy between their self-reported-ancestry and or ancestry estimation. \label{fig:mismatch}}
 \end{figure}
 
 \input{../tables/matched-pop-KNN}
@@ -341,13 +359,13 @@ The authors declare no competing interests.
 
 
 \begin{figure}[h]
-	\centerline{\includegraphics[width=0.8\textwidth]{hist-dist-British}}
-	\caption{ \label{fig:hist1}}
-\end{figure}
-\begin{figure}[h]
-	
 \centerline{\includegraphics[width=0.8\textwidth]{hist-dist-GBR}}
-\caption{ \label{fig:hist2}}
+\caption{ \label{fig:hist1}}
+\end{figure}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.8\textwidth]{hist-dist-British}}
+	\caption{ \label{fig:hist2}}
 \end{figure}
 
 \begin{figure}[h]
