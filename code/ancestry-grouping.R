@@ -48,9 +48,8 @@ qplot(all_sq_dist[, "EUR_GBR"]) +
 mean(all_sq_dist[, "EUR_GBR"] < thr_sq_dist) # 89.73%
 ind_GBR <- which(all_sq_dist[, "EUR_GBR"] < thr_sq_dist)
 
-df0 <- readRDS("data/info_UKBB.rds")
-df0 <- df0[match(obj.bed$fam$sample.ID, df0$eid), ]
-pop_UKBB <- df0$pop
+df <- readRDS("data/info_UKBB.rds")
+pop_UKBB <- df$pop
 table(as.character(pop_UKBB[ind_GBR]), exclude = NULL)
 
 ## African ancestry
@@ -86,16 +85,16 @@ ind_pop <- list(ind_GBR, ind_AFR, ind_EAS, ind_SAS, ind_AMR)
 length(unlist(ind_pop)) # 456410
 length(unique(unlist(ind_pop))) # 456410
 matched_pop <- rep(c("GBR", "AFR", "EAS", "SAS", "AMR"), lengths(ind_pop))
-df0_pop <- df0[unlist(ind_pop), ]
+df_pop <- df[unlist(ind_pop), ]
 
 plot_grid(
-  qplot(PC1, PC2, data = df0_pop, color = matched_pop) +
+  qplot(PC1, PC2, data = df_pop, color = matched_pop) +
     theme_bigstatsr(0.8) +
     labs(color = "Ancestry") +
     theme(legend.position = c(0.75, 0.4)) +
     guides(colour = guide_legend(override.aes = list(size = 2))),
 
-  qplot(PC3, PC4, data = df0_pop, color = matched_pop) +
+  qplot(PC3, PC4, data = df_pop, color = matched_pop) +
     theme_bigstatsr(0.8) +
     theme(legend.position = "none"),
 
@@ -108,7 +107,7 @@ plot_grid(
 ## 2) Using self-reported ancestry (without projection)
 
 library(dplyr)
-PC_UKBB <- as.matrix(select(df0, PC1:PC16))
+PC_UKBB <- as.matrix(select(df, PC1:PC16))
 mixed <- c("Asian or Asian British", "Black or Black British",
            "White and Black Caribbean", "White and Black African",
            "White and Asian")

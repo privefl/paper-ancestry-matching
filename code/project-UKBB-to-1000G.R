@@ -71,8 +71,8 @@ choose_pop2 <- ifelse(min_sq_dist > thr_sq_dist, NA,
 mean(is.na(choose_pop2)) # 4.55%
 
 
-df0 <- readRDS("data/info_UKBB.rds")
-pop_UKBB <- df0$pop[match(obj.bed$fam$sample.ID, df0$eid)]
+df <- readRDS("data/info_UKBB.rds")
+pop_UKBB <- df$pop
 mixed <- c("Asian or Asian British", "Black or Black British",
            "White and Black Caribbean", "White and Black African",
            "White and Asian")
@@ -144,7 +144,7 @@ ind_mistmatch <- c(
   which(pop_UKBB %in% c("Caribbean", "African", "Other Black") &
           substr(choose_pop2, 1, 3) != "AFR")  # 28, mainly Caribbean as SAS
 ) # 47 values
-PC_UKBB <- df0[match(obj.bed$fam$sample.ID, df0$eid), -(1:2)]
+PC_UKBB <- df[, -(1:2)]
 
 ind <- sample(which(!is.na(pop_UKBB2)), 50e3)
 

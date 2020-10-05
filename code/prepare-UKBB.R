@@ -49,4 +49,9 @@ df0 <- fread2(
         "Caribbean", "African", "Other Black"))
   )
 str(df0)
-saveRDS(df0, "data/info_UKBB.rds")
+
+bed_eid <- fread2("data/ukbb.fam")[[2]]
+df <- df0[match(bed_eid, df0$eid), ]
+mean(is.na(df$pop))  # 1.6%
+
+saveRDS(df, "data/info_UKBB.rds")
