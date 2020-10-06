@@ -9,12 +9,12 @@ df <- data.frame(pop  = all_pop$Population,
                  lat  = igsr_pop$`Population latitude`[ind],
                  lon  = igsr_pop$`Population longitude`[ind])
 
-Amsterdam <- c(52.377956, 4.897070)
-df[df$pop == "CEU", c("lat", "lon")] <- Amsterdam
 Gujarat <- c(22.309425, 72.136230)
 df[df$pop == "GIH", c("lat", "lon")] <- Gujarat
 df[df$pop == "ITU", c("lat", "lon")] <- c(16.5, 79.5)
 df[df$pop == "STU", c("lat", "lon")] <- c(6.927079,	79.861244)
+# Amsterdam <- c(52.377956, 4.897070)
+# df[df$pop == "CEU", c("lat", "lon")] <- Amsterdam
 # Edinburgh <- c(55.953251, -3.188267)
 # London <- c(51.509865, -0.118092)
 # df[df$pop == "GBR", c("lat", "lon")] <- (Edinburgh + London) / 2
