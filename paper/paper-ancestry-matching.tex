@@ -46,7 +46,7 @@
 
 \let\tabbeg\tabular
 \let\tabend\endtabular
-\renewenvironment{tabular}{\begin{adjustbox}{max width=0.9\textwidth}\tabbeg}{\tabend\end{adjustbox}}
+\renewenvironment{tabular}{\begin{adjustbox}{max width=0.95\textwidth}\tabbeg}{\tabend\end{adjustbox}}
 
 \makeatletter
 
@@ -82,6 +82,11 @@
 \vspace*{5em}
 
 \abstract{
+	First, we show how Euclidean distance in the Principal Component Analysis (PCA) space is related to $F_{ST}$ between populations.
+	Then, we project the genetic data of individuals from the UK Biobank and the POPRES datasets onto the reference populations of the 1000 Genomes Project and show how to accurately infer global ancestry and group individuals in homogeneous clusters. 
+	Inferring ancestry for nearly 500,000 individuals is performed in 20 minutes only.
+	The proposed method is particularly important for methods that needs to be applied in homogeneous samples.
+	Finally, we conclude that our method and the community would benefit from having an easy access to a reference dataset with an even better coverage of the worldwide genetic diversity than the 1000 Genomes Project.
 }
 
 
@@ -200,7 +205,7 @@ Overall, all these techniques approximately identify the same amount of people (
 
 \begin{figure}[htb]
 	\centerline{\includegraphics[width=0.95\textwidth]{UKBB-matched-ancestry}}
-	\caption{ \label{fig:grouping}}
+	\caption{The UK Biobank PC scores (first four) colored by the homogeneous ancestry group we infer for these individuals. \label{fig:grouping}}
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -237,7 +242,7 @@ As for the distance limit, we have shown here how to define it to approximately 
 This threshold can also be adjusted depending on how stringent you want the selection to be.
 
 In conclusion, we believe our proposed approach to be a simple and robust way to infer global ancestry and to define groups of homogeneous ancestry.
-It is also very fast, allowing to infer ancestry for 488,371 individuals in 20 minutes.
+It is also very fast, allowing to infer ancestry for 488,371 individuals in 20 minutes using 16 cores.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
