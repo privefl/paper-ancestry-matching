@@ -73,6 +73,10 @@ mean(is.na(choose_pop2)) # 4.55%
 
 df <- readRDS("data/info_UKBB.rds")
 pop_UKBB <- df$pop
+saveRDS(data.frame(pop = pop_UKBB, infer = choose_pop2,
+                   continent = df$continent, country = df$country),
+        "data/matched-pop.rds")
+
 mixed <- c("Asian or Asian British", "Black or Black British",
            "White and Black Caribbean", "White and Black African",
            "White and Asian")

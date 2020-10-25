@@ -29,11 +29,13 @@ library(dplyr)
 code_ancestry <- fread2("UKBB/coding1001.tsv")
 unknown <- c("Prefer not to answer", "Do not know", "Mixed",
              "Other ethnic group", "Any other mixed background")
+code_country <- filter(fread2("UKBB/coding89.tsv"), selectable == "Y")
+code_continent <- filter(fread2("UKBB/coding89.tsv"), selectable == "N")
 
 df0 <- fread2(
   "UKBB/ukb41181.csv",
-  select = c("eid", "21000-0.0", paste0("22009-0.", 1:16)),
-  col.names = c("eid", "pop", paste0("PC", 1:16))
+  select = c("eid", "21000-0.0", "20115-0.0", paste0("22009-0.", 1:16)),
+  col.names = c("eid", "pop", "country", paste0("PC", 1:16))
 ) %>%
   mutate(
     pop  = factor(pop, levels = code_ancestry$coding,
@@ -46,9 +48,19 @@ df0 <- fread2(
       forcats::fct_relevel(c(
         "British", "Irish", "White", "Other White",
         "Indian", "Pakistani", "Bangladeshi", "Chinese", "Other Asian",
-        "Caribbean", "African", "Other Black"))
+        "Caribbean", "African", "Other Black")),
+
+    continent = factor(country, levels = code_country$coding,
+                       labels = code_country$parent_id) %>%
+      factor(labels = code_continent$meaning),
+
+    country = factor(country, levels = code_country$coding,
+                     labels = code_country$meaning)
   )
 str(df0)
+df0$country[with(df0, is.na(country) & pop == "British")] <- "United Kingdom"
+df0$country[with(df0, is.na(country) & pop == "Irish")]   <- "Ireland"
+df0$continent[df0$country %in% c("United Kingdom", "Ireland")] <- "Europe"
 
 bed_eid <- fread2("data/ukbb.fam")[[2]]
 df <- df0[match(bed_eid, df0$eid), ]

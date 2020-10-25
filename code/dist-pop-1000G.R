@@ -1,4 +1,6 @@
 library(bigsnpr)
+library(ggplot2)
+theme_set(theme_bigstatsr())
 NCORES <- 15
 
 #### Compute PCA on 1000G ####
@@ -25,7 +27,7 @@ obj.svd <- runonce::save_run(
   file = "tmp-data/SVD-1000G.rds"
 )
 plot(obj.svd, type = "scores", scores = 14:25, coeff = 0.6)
-PC <- predict(obj.svd)[, 1:19]
+PC <- predict(obj.svd)
 
 
 #### Compute multiple distances between 1000G populations ####
@@ -102,6 +104,12 @@ pdf("figures/heatmap-bhattacharyya-1000G.pdf", width = 8, height = 8)
 heatmap(dist_bhattacharyya, symm = TRUE, Rowv = as.dendrogram(hc))
 dev.off()
 
+qplot(dist_bhattacharyya, dist_fst) +
+  scale_color_viridis_c() +
+  geom_smooth(color = "red", method = "lm", formula = "y ~ x + 0") +
+  labs(x = "Bhattacharyya distance between clusters", y = "Fst")
+# ggsave("figures/compare-Bhattacharyya-to-Fst.pdf", width = 8, height = 6)
+
 
 ## Distance between centers
 
@@ -112,6 +120,25 @@ hc <- hclust(dist_centers, method = "single")
 pdf("figures/heatmap-centers-1000G.pdf", width = 8, height = 8)
 heatmap(as.matrix(dist_centers), symm = TRUE, Rowv = as.dendrogram(hc))
 dev.off()
+
+qplot(as.matrix(dist_centers)^2, dist_fst) +
+  scale_color_viridis_c() +
+  geom_smooth(color = "red", method = "lm", formula = "y ~ x + 0") +
+  labs(x = "Squared distance between centers of clusters", y = "Fst")
+# ggsave("figures/compare-Euclidean-to-Fst.pdf", width = 8, height = 6)
+
+all_plots <- lapply(c(2, 3, 4, 8, 16, 25), function(K) {
+  all_centers <- bigutilsr::geometric_median(PC[, 1:K], by_grp = pop_1000G)
+  dist_centers <- dist(all_centers)
+  qplot(as.matrix(dist_centers)^2, dist_fst) +
+    scale_color_viridis_c() +
+    theme_bigstatsr(0.7) +
+    geom_smooth(color = "red", method = "lm", formula = "y ~ x + 0") +
+    labs(x = "Squared distance between centers of clusters", y = "Fst") +
+    ggtitle(paste("With", K, "PCs"))
+})
+plot_grid(plotlist = all_plots, scale = 0.95)
+# ggsave("figures/compare-Euclidean-to-Fst2.pdf", width = 12, height = 6)
 
 
 ## Shortest distance
@@ -131,41 +158,8 @@ pdf("figures/heatmap-closest-1000G.pdf", width = 8, height = 8)
 heatmap(dist_closest, symm = TRUE, Rowv = as.dendrogram(hc))
 dev.off()
 
-
-#### Compare distances with Fst #####
-library(ggplot2)
-theme_set(theme_bigstatsr(0.7))
-
-plot_grid(
-  qplot(dist_bhattacharyya, dist_fst) +
-    scale_color_viridis_c() +
-    geom_smooth(color = "red", method = "lm", formula = "y ~ x + 0") +
-    labs(x = "Bhattacharyya distance between clusters", y = "Fst"),
-  qplot(dist_bhattacharyya, dist_fst / (1 - dist_fst)) +
-    scale_color_viridis_c() +
-    geom_smooth(color = "red", method = "lm", formula = "y ~ x + 0") +
-    labs(x = "Bhattacharyya distance between clusters", y = "Fst / (1 - Fst)"),
-
-  qplot(as.matrix(dist_centers)^2, dist_fst) +
-    scale_color_viridis_c() +
-    geom_smooth(color = "red", method = "lm", formula = "y ~ x + 0") +
-    labs(x = "Squared distance between centers of clusters", y = "Fst"),
-  qplot(as.matrix(dist_centers)^2, dist_fst / (1 - dist_fst)) +
-    scale_color_viridis_c() +
-    geom_smooth(color = "red", method = "lm", formula = "y ~ x + 0") +
-    labs(x = "Squared distance between centers of clusters",
-         y = "Fst / (1 - Fst)"),
-
-  qplot(dist_closest, dist_fst) +
-    scale_color_viridis_c() +
-    geom_smooth(color = "red", method = "lm", formula = "y ~ x + 0") +
-    labs(x = "Shortest distance between clusters", y = "Fst"),
-  qplot(dist_closest, dist_fst / (1 - dist_fst)) +
-    scale_color_viridis_c() +
-    geom_smooth(color = "red", method = "lm", formula = "y ~ x + 0") +
-    labs(x = "Shortest distance between clusters", y = "Fst / (1 - Fst)"),
-
-  ncol = 2, scale = 0.95
-)
-
-# ggsave("figures/compare-dist-to-Fst.pdf", width = 9, height = 10)
+qplot(dist_closest, dist_fst) +
+  scale_color_viridis_c() +
+  geom_smooth(color = "red", method = "lm", formula = "y ~ x + 0") +
+  labs(x = "Shortest distance between clusters", y = "Fst")
+# ggsave("figures/compare-closest-to-Fst.pdf", width = 8, height = 6)
