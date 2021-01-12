@@ -23,9 +23,6 @@
 
 \renewcommand{\arraystretch}{1.2}
 
-\usepackage{xr}
-\externaldocument{paper-ancestry-matching-supp}
-
 %\linenumbers
 %\doublespacing
 \onehalfspacing
@@ -65,38 +62,13 @@
 \begin{document}
 
 
-\title{Ancestry inference and grouping\\from principal component analysis of genetic data
+\title{Supplementary Note: Ancestry inference and grouping from principal component analysis of genetic data
 }
-\author{Florian Priv\'e$^{\text{1,}*}$}
 
 \date{~ }
 \maketitle
 
-\noindent$^{\text{\sf 1}}$National Centre for Register-Based Research, Aarhus University, Aarhus, 8210, Denmark. \\
-\noindent$^\ast$To whom correspondence should be addressed.\\
-
-\noindent Contact:
-\begin{itemize}
-\item \url{florian.prive.21@gmail.com}
-\end{itemize}
-
-\vspace*{5em}
-
-\abstract{
-	Here we propose a simple, robust and effective method for global ancestry inference and grouping from Principal Component Analysis (PCA) of genetic data.
-	The proposed approach is particularly useful for methods that need to be applied in homogeneous samples.
-	First, we show that Euclidean distances in the PCA space are proportional to $F_{ST}$ between populations.
-	Then, we show how to use this PCA-based distance to infer ancestry in the UK Biobank and the POPRES datasets.
-	We propose two solutions, either relying on projection of PCs to reference populations such as from the 1000 Genomes Project, or by directly using the internal data.
-	Finally, we conclude that our method and the community would benefit from having an easy access to a reference dataset with an even better coverage of the worldwide genetic diversity than the 1000 Genomes Project.
-}
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\newpage
-
-\subsection*{Introduction}
 
 Principal Component Analysis (PCA) has been widely used to correct for population structure in association studies and has been shown to mirror geography in Europe \cite[]{price2006principal,novembre2008genes}.
 Due to its popularity, many methods has been developed for efficiently performing PCA \cite[]{abraham2017flashpca2,prive2020efficient} as well as appropriately projecting samples onto a reference PCA space \cite[]{zhang2020fast,prive2020efficient}, making possible to perform these analyses for ever increasing datasets in human genetics.
@@ -111,7 +83,7 @@ However, inferring global ancestry in non-admixed individuals is still a very im
 This is the case e.g.\ for polygenic score methods that have been shown to underperform when applied to populations not homogeneous to the population used for training \cite[]{martin2017human}.
 
 \vspace*{2em}
-$^\dag$ Further defined in supplementary section ``Definitions $\dag$ and methods''.
+$^\dag$ Further defined in section ``Definitions $\dag$ and methods''.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -164,6 +136,198 @@ Only 16 out of the 1385 individuals (1.2\%) could not be matched, of which 11 we
 Note that all individuals that we could match were identified as of European ancestry. 
 We could also identify accurately sub-regions of Europe; e.g.\ 261 out of 264 Spanish and Portugese individuals were identified as ``Iberian Population in Spain'' (EUR\_IBS, Table \ref{tab:ancestry-pred-popres}).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{PCA-based ancestry grouping}
+
+Finally, we show several ways how to use our ancestry inference method for grouping genetically homogeneous individuals.
+One first possible approach is to simply match individuals that are close enough to one of the 1000G populations, as described previously.
+Alternatively, one could use the internal PC scores and the self-reported ancestries or countries of birth, e.g.\ available in the UK Biobank (Fields 21000 and 20115). 
+This solution does not require projecting individuals to the 1000G, but does require computing PC scores within the dataset instead.
+In the UK Biobank data, we can define centers of the seven self-reported ancestry groups: British, Indian, Pakistani, Bangladeshi, Chinese, Caribbean and African; then match all individuals to one of these centers (or none if an individual is far from all centers).
+This enables e.g.\ to capture a larger set of individuals who are close enough to British people (e.g.\ Irish people), while discarding individuals whose genetic ancestry is not matching the self-reported ancestry (Table \ref{tab:ancestry-groups}). 
+Only 3.7\% of all individuals could not be matched.
+The resulting clusters are presented in the PCA space in figure \ref{fig:grouping}.
+
+{\bf One could do the same using the countries of birth instead of the self-reported ancestries, which we use in the main text.}
+Again, the country of birth may sometime not reflect the ancestral origin. Therefore, we first compute the robust centers (geometric medians) of all countries with at least 300 individuals. Then, we cluster these countries based on their distance in the PCA space to make sure of their validity as proxies for genetic ancestry and to choose a small subset of centers with good coverage of the overall dissimilarities (Figure \ref{fig:heatmap-country}).
+Based on the previous clustering and the available sample sizes, we chosed to use the centers from the following eight countries as reference: the United Kingdom, Poland, Iran, Italy, India, China, ``Caribbean'' and Nigeria.
+Only 2.8\% of all individuals could not be matched (Table \ref{tab:country-groups}).
+The resulting clusters are presented in the PCA space in figure \ref{fig:grouping2}.
+Note that these clusters probably include individuals from nearby countries as well.
+
+\input{../tables/country-groups}
+
+\begin{figure}[p]
+	\centerline{\includegraphics[width=0.9\textwidth]{UKBB-matched-country}}
+	\caption{The first eight PC scores computed from the UK Biobank (Field 22009) colored by the homogeneous ancestry group we infer for these individuals. \label{fig:grouping2}}
+\end{figure}
+
+Finally, when we know that the data is composed of a predominant ancestry, we can define a single homogeneous cluster by simply restricting to individuals who are close enough to the overall center of all individuals (Figure \ref{fig:hist3}).
+When doing so, we can cluster 91\% of the data into one cluster composed of 421,871 British, 12,039 Irish, 8351 ``Other White'', 1814 individuals of unknown ancestry, 467 ``White'' and 41 individuals of other self-reported ancestries.
+This is made possible because we use the geometric median which is robust to outliers.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{Discussion}
+
+Here we propose a PCA-based method for ancestry inference and grouping individuals into genetically homogeneous clusters.
+We show how the PCA-based distance is related to the $F_{ST}$, which allows to compute distances based on PC scores directly.
+This relation between $F_{ST}$ and (squared) Euclidean distances in the PCA space has been previously shown for two populations only \cite[]{mcvean2009genealogical}.
+Previously, we and others proposed to use (robust) Mahalanobis distances to infer ancestry or identify a single homogeneous group of individuals \cite[]{peterson2017utility,prive2020efficient}. 
+When looking at distances between two populations, this corresponds to using the Bhattacharyya distance, which appears suboptimal here compared to using a simple Euclidean distance.
+We hypothesize that the main issue with this approach is that an admixed population covers a large volume in the PCA space, therefore all distances to this population cluster are small because of the covariance component from the Mahalanobis distance.
+In contrast, here we propose to directly use the global scale of the PC scores, which is invariant from the cluster scattering.
+This global scale makes it also more robust to infer ancestry with our method as compared to using relative proportions from k=20 nearest neighbors (kNN, \cite{zhang2020fast}).
+Indeed, consider e.g.\ an admixed individual of say 25\% European ancestry and 75\% African ancestry.
+The kNN-based method is likely to identify this individual as of African ancestry, while our method will probably be unable to match it, which is a beneficial feature when we are interested in defining genetically homogeneous groups.
+We also believe our proposed method to be more robust than machine learning methods, because a machine learning method would try e.g.\ to differentiate between GBR and CEU 1000G populations, which are two very close populations of Northwest Europe ($F_{ST}$ of 0.0002). In other words, our distance-based method should benefit from the inclusion of any new reference population while it would make it increasingly complex to apply machine learning methods.
+
+Yet, our proposed method also has limitations. 
+First, since we match target individuals to 1000G populations, if individuals are far from all 26 1000G populations, then they would not be matched.
+When looking at the POPRES data, more individuals from East Europe could not be matched. 
+This is not surprising because there are no East European population in the 1000G data.
+Moreover, if we look at the location of the 1000G populations on a map, we can see that it lacks representation of many parts of the world (Figure \ref{fig:map}).
+This issue has also been reported e.g.\ for Asian populations \cite[]{lu2013principal}.
+Therefore more diverse populations should be aggregated to better cover the worldwide genome diversity, which would also improve our proposed method.
+Nevertheless, we also show how to define homogeneous ancestry groups without using the 1000G data, either by using self-reported ancestries or countries of birth.
+When a predominant genetic ancestry is present in the data, such as British in the UK Biobank \cite[]{bycroft2017genome} or Danish in the iPSYCH data \cite[]{pedersen2018ipsych2012}, we also show how to directly restrict to a homogeneous subset of the data.
+
+A second potential limitation of our method is that it has two hyper-parameters: the number of PCs used to compute the distances and the threshold on the minimum distance to any cluster center above which the ancestry is not matched. 
+Several studies have used only the first two PCs for ancestry inference. We have shown here that using two PCs (or even four) is not enough for distinguishing between populations at the sub-continental level (Figure \ref{fig:compare-distK}).
+As in \cite{prive2020efficient}, we recommend to use all PCs that visually separate some populations.
+Moreover, we believe our proposed method to be robust to increasing the number of PCs used because contribution to the Euclidean distance is smaller for later PCs than for first PCs.
+As for the distance limit, we have shown here how to define it to approximately correspond to an $F_{ST}$ of 0.002. Alternatively, a threshold can be chosen based on the visual inspection of the histogram of distances (on a log scale).
+This threshold can also be adjusted depending on how homogeneous one want each cluster to be.
+
+In conclusion, we believe our proposed approach to be a simple and robust way to infer global ancestry and to define groups of homogeneous ancestry.
+It is also very fast, allowing to infer ancestry for 488,371 individuals in 20 minutes using 16 cores.
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.95\textwidth]{map-unmatched}}
+	\caption{
+		Percentage of individuals from the UK Biobank that could not been matched to any of the 26 1000G populations using our method, per country of birth (Field 20115). Countries in grey contain less than 30 individuals, therefore their percentages are not represented.
+		Red points represent the locations of the 1000G populations, accessed from \url{https://www.internationalgenome.org/data-portal/population}. 
+		Note that ``Gujarati Indian from Houston, Texas'' were manually moved to Gujarat (22.309425, 72.136230), ``Sri Lankan Tamil from the UK'' to Sri Lanka (6.927079, 79.861244), and ``Indian Telugu from the UK'' to (16.5, 79.5) to better reflect the location of their ancestors.
+		Also note that ``Utah Residents with Northern and Western European Ancestry'', ``Americans of African Ancestry in SW USA'', ``African Caribbeans in Barbados'' and ``Mexican Ancestry from Los Angeles USA'' are probably not located at their ancestral location. \label{fig:map}}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\clearpage
+
+\subsection*{Definitions $\dag$ and methods}
+
+Note that the code used in this supplementary note is available at \url{https://github.com/privefl/paper-ancestry-matching/tree/master/code}.
+
+\begin{itemize}
+	
+	\item The {\bf 1000 Genomes Project (1000G)} data is composed of approximately 100 individuals for each of 26 populations worldwide (described at \url{https://www.internationalgenome.org/category/population/}), including 7 African (AFR), 5 East Asian (EAS), 5 South Asian (SAS), 5 European (EUR) and 4 admixed American (AMR) populations.
+	Here we used the transformed data in PLINK format provided in \cite{prive2020efficient}.
+	
+	\item The $\boldsymbol{F_{ST}}$ measures the relative amount of genetic variance between populations compared to the total genetic variance within these populations \cite[]{wright1965interpretation}.
+	We use the weighted average formula proposed in \cite{weir1984estimating}, which we now implement in our package bigsnpr \cite[]{prive2017efficient}.
+	
+	\item The {\bf Principal Component (PC) scores} are defined as $U \Delta$, where $U \Delta V^T$ is the singular value decomposition of the (scaled) genotype matrix \cite[]{prive2020efficient}. They are usually truncated, e.g.\ corresponding to the first 20 principal dimensions only. 
+	
+	\item The {\bf Bhattacharyya distance} between two multivariate normal distributions $\mathcal{N}(\boldsymbol\mu_1,\,\boldsymbol\Sigma_1)$ and $\mathcal{N}(\boldsymbol\mu_2,\,\boldsymbol\Sigma_2)$ is defined as
+	$D_B={1\over 8}(\boldsymbol\mu_2-\boldsymbol\mu_1)^T \boldsymbol\Sigma^{-1}(\boldsymbol\mu_2-\boldsymbol\mu_1)+{1\over 2}\log \,\left({|\boldsymbol\Sigma| \over \sqrt{|\boldsymbol\Sigma_1| \, |\boldsymbol\Sigma_2|} }\right)$,
+	where $\boldsymbol\Sigma={\boldsymbol\Sigma_1+\boldsymbol\Sigma_2 \over 2}$ and $|M|$ is the absolute value of the determinant of matrix $M$ \cite[]{bhattacharyya1943measure,fukunaga1990introduction}. 
+	The mean and covariance parameters for each population are computed using the robust location and covariance parameters as proposed in \cite{prive2020efficient}.
+	
+	\item The {\bf geometric median} of points is the point that minimizes the sum of all Euclidean distances to these points. We now implement this as function \texttt{geometric\_median} in our R package bigutilsr.
+	
+	\item The {\bf UK Biobank} is a large cohort of half a million individuals from the UK, for which we have access to both genotypes and multiple phenotypes (\url{https://www.ukbiobank.ac.uk/}).
+	We apply some quality control filters to the genotyped data; we remove individuals with more than 10\% missing values, variants with more than 1\% missing values, variants having a minor allele frequency < 0.01, variants with P-value of the Hardy-Weinberg exact test < $10^{-50}$, and non-autosomal variants. 
+	This results in 488,371 individuals and 504,139 genetic variants.
+	
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\clearpage
+
+\bibliographystyle{natbib}
+\bibliography{refs}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\clearpage
+
+\section*{Additional Figures and Tables}
+
+\renewcommand{\thefigure}{S\arabic{figure}}
+\setcounter{figure}{0}
+\renewcommand{\thetable}{S\arabic{table}}
+\setcounter{table}{0}
+\renewcommand{\theequation}{S\arabic{equation}}
+\setcounter{equation}{0}
+\renewcommand{\thesection}{S\arabic{section}}
+\setcounter{section}{1}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{Measures of genetic dissimilarity between populations}
+
+\input{../tables/fst-values-AFR}
+\input{../tables/fst-values-AMR}
+\input{../tables/fst-values-EAS}
+\input{../tables/fst-values-EUR}
+\input{../tables/fst-values-SAS}
+
+\FloatBarrier
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.8\textwidth]{heatmap-Fst-1000G}}
+	\caption{Heatmap with clustering based on the $F_{ST}$ between pairs of the 26 1000G populations. Corresponding values are reported in tables \ref{tab:fst-AFR}-\ref{tab:fst-SAS}. \label{fig:heatmap0}}
+\end{figure}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.8\textwidth]{heatmap-bhattacharyya-1000G}}
+	\caption{Heatmap with clustering based on the Bhattacharyya distances between pairs of the 26 1000G populations. \label{fig:heatmap1}}
+\end{figure}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.7\textwidth]{compare-Bhattacharyya-to-Fst}}
+	\caption{Comparing $F_{ST}$ to the Bhattacharyya distance on the PCA space between pairs of the 26 1000G populations. \label{fig:compare-dist1}}
+\end{figure}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.8\textwidth]{heatmap-centers-1000G}}
+	\caption{Heatmap with clustering based on the Euclidean distances between centers of pairs of the 26 1000G populations. \label{fig:heatmap2}}
+\end{figure}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.95\textwidth]{compare-Euclidean-to-Fst2}}
+	\caption{Comparing $F_{ST}$ to the squared Euclidean distances on the PCA space between centers of pairs of the 26 1000G populations. Distances are computed using different numbers of Principal Components (PCs). \label{fig:compare-distK}}
+\end{figure}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.8\textwidth]{heatmap-closest-1000G}}
+	\caption{Heatmap with clustering based on the shortest distances between individuals in pairs of the 26 1000G populations. \label{fig:heatmap3}}
+\end{figure}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.7\textwidth]{compare-closest-to-Fst}}
+	\caption{Comparing $F_{ST}$ to the shortest distances between individuals in pairs of the 26 1000G populations. \label{fig:compare-dist3}}
+\end{figure}
+
+\FloatBarrier
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{PCA-based ancestry inference}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.9\textwidth]{proj-UKBB-to-1000G}}
+	\caption{First 18 PC scores of the 1000G data (in black), onto which the UK Biobank data has been projected (in red). \label{fig:proj-UKBB}}
+\end{figure}
+
+\FloatBarrier
+
 \begin{table}[htb]
 	\centering
 	\caption{Self-reported ancestry (left) of UKBB individuals and their matching to 1000G continental populations (top) by our method. See the description of 1000G populations at \url{https://www.internationalgenome.org/category/population/}.} 
@@ -198,112 +362,40 @@ We could also identify accurately sub-regions of Europe; e.g.\ 261 out of 264 Sp
 	\end{tabular}
 \end{table}
 
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.95\textwidth]{UKBB-mismatch}}
+	\caption{PC scores (computed in the UK Biobank) colored by self-reported ancestry. On the left, these are 50,000 random individuals. On the right, these are the 47 individuals with some discrepancy between their self-reported-ancestry and our ancestry estimation (see table \ref{tab:infer-UKBB-superpop}). \label{fig:mismatch}}
+\end{figure}
+
+\input{../tables/matched-pop-KNN}
+\input{../tables/infer-UKBB-pop}
+\input{../tables/POPRES-matching}
+
+
+\FloatBarrier
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection*{PCA-based ancestry grouping}
 
-Finally, we show several ways how to use our ancestry inference method for grouping genetically homogeneous individuals.
-One first possible approach is to simply match individuals that are close enough to one of the 1000G populations, as described previously.
-Alternatively, one could use the internal PC scores and the self-reported ancestries or countries of birth, e.g.\ available in the UK Biobank (Fields 21000 and 20115). 
-This solution does not require projecting individuals to the 1000G, but does require computing PC scores within the dataset instead.
-In the UK Biobank data, we can define centers of the seven self-reported ancestry groups: British, Indian, Pakistani, Bangladeshi, Chinese, Caribbean and African; then match all individuals to one of these centers (or none if an individual is far from all centers).
-This enables e.g.\ to capture a larger set of individuals who are close enough to British people (e.g.\ Irish people), while discarding individuals whose genetic ancestry is not matching the self-reported ancestry (Table \ref{tab:ancestry-groups}). 
-Only 3.7\% of all individuals could not be matched.
-The resulting clusters are presented in the PCA space in figure \ref{fig:grouping}.
+\begin{figure}[h]
+	\centerline{\includegraphics[width=0.9\textwidth]{heatmap-country-UKBB}}
+	\caption{Heatmap with clustering based on the distances in the PCA space between centers of pairs of the countries of birth in the UK Biobank. \label{fig:heatmap-country}}
+\end{figure}
 
-One could do the same using the countries of birth instead of the self-reported ancestries.
-Again, the country of birth may sometime not reflect the ancestral origin. Therefore, we first compute the robust centers (geometric medians) of all countries with at least 300 individuals. Then, we cluster these countries based on their distance in the PCA space to make sure of their validity as proxies for genetic ancestry and to choose a small subset of centers with good coverage of the overall dissimilarities (Figure \ref{fig:heatmap-country}).
-Based on the previous clustering and the available sample sizes, we chosed to use the centers from the following eight countries as reference: the United Kingdom, Poland, Iran, Italy, India, China, ``Caribbean'' and Nigeria.
-Only 2.8\% of all individuals could not be matched (Table \ref{tab:country-groups}).
-The resulting clusters are presented in the PCA space in figure \ref{fig:grouping2}.
-Note that these clusters probably include individuals from nearby countries as well.
-
-Finally, when we know that the data is composed of a predominant ancestry, we can define a single homogeneous cluster by simply restricting to individuals who are close enough to the overall center of all individuals (Figure \ref{fig:hist3}).
-When doing so, we can cluster 91\% of the data into one cluster composed of 421,871 British, 12,039 Irish, 8351 ``Other White'', 1814 individuals of unknown ancestry, 467 ``White'' and 41 individuals of other self-reported ancestries.
-This is made possible because we use the geometric median which is robust to outliers.
+\input{../tables/ancestry-groups}
 
 \begin{figure}[htb]
 	\centerline{\includegraphics[width=0.95\textwidth]{UKBB-matched-ancestry}}
 	\caption{The first eight PC scores computed from the UK Biobank (Field 22009) colored by the homogeneous ancestry group we infer for these individuals. \label{fig:grouping}}
 \end{figure}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection*{Discussion}
-
-Here we propose a PCA-based method for ancestry inference and grouping individuals into genetically homogeneous clusters.
-We show how the PCA-based distance is related to the $F_{ST}$, which allows to compute distances based on PC scores directly.
-This relation between $F_{ST}$ and (squared) Euclidean distances in the PCA space has been previously shown for two populations only \cite[]{mcvean2009genealogical}.
-Previously, we and others proposed to use (robust) Mahalanobis distances to infer ancestry or identify a single homogeneous group of individuals \cite[]{peterson2017utility,prive2020efficient}. 
-When looking at distances between two populations, this corresponds to using the Bhattacharyya distance, which appears suboptimal here compared to using a simple Euclidean distance.
-We hypothesize that the main issue with this approach is that an admixed population covers a large volume in the PCA space, therefore all distances to this population cluster are small because of the covariance component from the Mahalanobis distance.
-In contrast, here we propose to directly use the global scale of the PC scores, which is invariant from the cluster scattering.
-This global scale makes it also more robust to infer ancestry with our method as compared to using relative proportions from k=20 nearest neighbors (kNN, \cite{zhang2020fast}).
-Indeed, consider e.g.\ an admixed individual of say 25\% European ancestry and 75\% African ancestry.
-The kNN-based method is likely to identify this individual as of African ancestry, while our method will probably be unable to match it, which is a beneficial feature when we are interested in defining genetically homogeneous groups.
-We also believe our proposed method to be more robust than machine learning methods, because a machine learning method would try e.g.\ to differentiate between GBR and CEU 1000G populations, which are two very close populations of Northwest Europe ($F_{ST}$ of 0.0002). In other words, our distance-based method should benefit from the inclusion of any new reference population while it would make it increasingly complex to apply machine learning methods.
-
-Yet, our proposed method also has limitations. 
-First, since we match target individuals to 1000G populations, if individuals are far from all 26 1000G populations, then they would not be matched.
-When looking at the POPRES data, more individuals from East Europe could not be matched. 
-This is not surprising because there are no East European population in the 1000G data.
-Moreover, if we look at the location of the 1000G populations on a map, we can see that it lacks representation of many parts of the world (Figure \ref{fig:map}).
-This issue has also been reported e.g.\ for Asian populations \cite[]{lu2013principal}.
-Therefore more diverse populations should be aggregated to better cover the worldwide genome diversity, which would also improve our proposed method.
-Nevertheless, we also show how to define homogeneous ancestry groups without using the 1000G data, either by using self-reported ancestries or countries of birth.
-When a predominant genetic ancestry is present in the data, such as British in the UK Biobank \cite[]{bycroft2017genome} or Danish in the iPSYCH data \cite[]{pedersen2018ipsych2012}, we also show how to directly restrict to a homogeneous subset of the data.
+\FloatBarrier
 
 \begin{figure}[h]
-	\centerline{\includegraphics[width=0.95\textwidth]{map-unmatched}}
-	\caption{
-		Percentage of individuals from the UK Biobank that could not been matched to any of the 26 1000G populations using our method, per country of birth (Field 20115). Countries in grey contain less than 30 individuals, therefore their percentages are not represented.
-		Red points represent the locations of the 1000G populations, accessed from \url{https://www.internationalgenome.org/data-portal/population}. 
-		Note that ``Gujarati Indian from Houston, Texas'' were manually moved to Gujarat (22.309425, 72.136230), ``Sri Lankan Tamil from the UK'' to Sri Lanka (6.927079, 79.861244), and ``Indian Telugu from the UK'' to (16.5, 79.5) to better reflect the location of their ancestors.
-		Also note that ``Utah Residents with Northern and Western European Ancestry'', ``Americans of African Ancestry in SW USA'', ``African Caribbeans in Barbados'' and ``Mexican Ancestry from Los Angeles USA'' are probably not located at their ancestral location. \label{fig:map}}
+	\centerline{\includegraphics[width=0.8\textwidth]{hist-dist-overall-center}}
+	\caption{Histogram of (log) squared distances from the UK Biobank PC scores to the geometric median of the all UKBB individuals. Here we use a threshold at 7, based on visual inspection. Alternatively, a more stringent threshold at 6 could also be used. \label{fig:hist3}}
 \end{figure}
-
-A second potential limitation of our method is that it has two hyper-parameters: the number of PCs used to compute the distances and the threshold on the minimum distance to any cluster center above which the ancestry is not matched. 
-Several studies have used only the first two PCs for ancestry inference. We have shown here that using two PCs (or even four) is not enough for distinguishing between populations at the sub-continental level (Figure \ref{fig:compare-distK}).
-As in \cite{prive2020efficient}, we recommend to use all PCs that visually separate some populations.
-Moreover, we believe our proposed method to be robust to increasing the number of PCs used because contribution to the Euclidean distance is smaller for later PCs than for first PCs.
-As for the distance limit, we have shown here how to define it to approximately correspond to an $F_{ST}$ of 0.002. Alternatively, a threshold can be chosen based on the visual inspection of the histogram of distances (on a log scale).
-This threshold can also be adjusted depending on how homogeneous one want each cluster to be.
-
-In conclusion, we believe our proposed approach to be a simple and robust way to infer global ancestry and to define groups of homogeneous ancestry.
-It is also very fast, allowing to infer ancestry for 488,371 individuals in 20 minutes using 16 cores.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\clearpage
-
-\section*{Software and code availability}
-
-The newest version of R package bigsnpr can be installed from GitHub (see \url{https://github.com/privefl/bigsnpr}).
-The code used in this paper is available at \url{https://github.com/privefl/paper-ancestry-matching/tree/master/code}.
-
-\section*{Acknowledgements}
-
-Authors thank Alex Diaz-Papkovich, Clive Hoggart and others for their useful feedback.
-This research has been conducted using the UK Biobank Resource under Application Number 41181.
-
-\section*{Funding}
-
-F.P.\ is supported by the Danish National Research Foundation (Niels Bohr Professorship to John McGrath).
-
-\section*{Declaration of Interests}
-
-The authors declare no competing interests.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%\newpage
-
-\bibliographystyle{natbib}
-\bibliography{refs}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \end{document}
