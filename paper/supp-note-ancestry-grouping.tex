@@ -80,7 +80,7 @@ $^\dag$ Further defined in section ``Definitions $\dag$ and methods''.
 We first compare four measures of genetic dissimilarity using populations of the 1000 Genomes Project (1000G$^\dag$, \cite{10002015global}). 
 The $F_{ST}$$^\dag$ is an ubiquitous measure of genetic dissimilarity between populations and the first measure we use in this comparison.
 We report $F_{ST}$ between the 26 1000G populations in tables \ref{tab:fst-AFR}-\ref{tab:fst-SAS}, and the clustering of these populations based on $F_{ST}$ in figure \ref{fig:heatmap0}.
-The other three measures compared are distances applied to the PC scores$^\dag$ of the genetic data: 1) the Bhattacharyya distance$^\dag$; 2) the distance between the centers (geometric medians$^\dag$) of the two populations; 3) the shortest distance between pairs of PC scores from the two populations.
+The other three measures compared are distances applied to the PC scores$^\dag$ of the genetic data: 1) the Bhattacharyya distance$^\dag$; 2) the distance between the centers (geometric medians$^\dag$) of the two populations; and 3) the shortest distance between pairs of PC scores, one from each of the two populations.
 The (squared) Euclidean distance between population centers appears to be an appropriate PCA-based distance as it is approximately proportional to the $F_{ST}$ (Figure \ref{fig:compare-dist2}) and provides an appropriate clustering of populations (Figure \ref{fig:heatmap2}).
 This relation between $F_{ST}$ and (squared) Euclidean distances in the PCA space has been previously shown for two populations only \cite[]{mcvean2009genealogical}.
 
@@ -98,7 +98,7 @@ In contrast, the global scale of the PC scores used when using Euclidean distanc
 
 We also vary the number of PCs used for computing the Euclidean distances and how they compare with $F_{ST}$ in figure \ref{fig:compare-distK}.
 With 2 to 4 PCs, we are able to adequately separate distant populations, but not the closest ones. For example, when using 4 PCs, there are pairs of populations with an $F_{ST}$ of \textasciitilde0.02 while their PC centers are superimposed (Figure \ref{fig:compare-distK}).
-When using more PCs (8, 16 or 25) to compute the distances, results remain similar.
+When using more PCs (8, 16 or 25) to compute the distances, results remain mostly similar.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -128,7 +128,7 @@ Morever, there are many more discrepancies between their method and the self-rep
 The global scale used in Euclidean distances makes it more robust to infer ancestry as compared to using relative proportions from k=20 nearest neighbors (kNN, \cite{zhang2020fast}).
 Indeed, consider e.g.\ an admixed individual of say 25\% European ancestry and 75\% African ancestry.
 The kNN-based method is likely to identify this individual as of African ancestry, while our method will probably be unable to match it, which is a beneficial feature when we are interested in defining genetically homogeneous groups.
-We also believe our proposed method to be more robust than machine learning methods, because a machine learning method would try e.g.\ to differentiate between GBR and CEU 1000G populations, which are two very close populations of Northwest Europe ($F_{ST}$ of 0.0002). In other words, our distance-based method should benefit from the inclusion of any new reference population while it would make it increasingly complex to apply machine learning methods.
+We also believe our proposed method to be more robust than machine learning methods, because a machine learning method would try e.g.\ to differentiate between GBR and CEU 1000G populations, which are two very close populations of Northwest Europe ($F_{ST}$ of 0.0002). In other words, our distance-based method should benefit from the inclusion of any new reference population, whereas it would make it increasingly complex to apply machine learning methods.
 
 Finally, our method is able to accurately differentiate between sub-continental populations such as differentiating between Pakistani, Bangladeshi and Chinese people (Table \ref{tab:ancestry-fine-pred}).
 We also applied our ancestry detection technique to the European individuals of the POPRES data \cite[]{nelson2008population}. 
@@ -142,7 +142,7 @@ When looking at the POPRES data, more individuals from East Europe could not be 
 This is not surprising because there are no East European population in the 1000G data.
 Moreover, if we look at the location of the 1000G populations on a map, we can see that it lacks representation of many parts of the world (Figure \ref{fig:map}).
 This issue has also been reported e.g.\ for Asian populations \cite[]{lu2013principal}.
-Therefore more diverse populations should be aggregated to better cover the worldwide genome diversity, which would also improve the proposed method.
+Therefore more diverse populations should be aggregated to better cover the worldwide genome diversity, such as with the Simons Genome Diversity Project \cite[]{mallick2016simons}, which would also improve the proposed method.
 A second potential limitation of the proposed method is that it has two hyper-parameters: the number of PCs used to compute the distances and the threshold on the minimum distance to any cluster center above which the ancestry is not matched. 
 Several studies have used only the first two PCs for ancestry inference. We have shown here that using two PCs (or even four) is not enough for distinguishing between populations at the sub-continental level (Figure \ref{fig:compare-distK}).
 As in \cite{prive2020efficient}, we recommend to use all PCs that visually separate some populations.
