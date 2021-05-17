@@ -82,11 +82,12 @@ The $F_{ST}$$^\dag$ is an ubiquitous measure of genetic dissimilarity between po
 We report $F_{ST}$ between the 26 1000G populations in tables \ref{tab:fst-AFR}-\ref{tab:fst-SAS}, and the clustering of these populations based on $F_{ST}$ in figure \ref{fig:heatmap0}.
 The other three measures compared are distances applied to the PC scores$^\dag$ of the genetic data: 1) the Bhattacharyya distance$^\dag$; 2) the distance between the centers (geometric medians$^\dag$) of the two populations; and 3) the shortest distance between pairs of PC scores, one from each of the two populations.
 The (squared) Euclidean distance between population centers appears to be an appropriate PCA-based distance as it is approximately proportional to the $F_{ST}$ (Figure \ref{fig:compare-dist2}) and provides an appropriate clustering of populations (Figure \ref{fig:heatmap2}).
+However, future work is needed to understand why residuals are bimodal for large distances (e.g.\ in figure \ref{fig:compare-dist2}).
 This relation between $F_{ST}$ and (squared) Euclidean distances in the PCA space has been previously shown for two populations only \cite[]{mcvean2009genealogical}.
 
 \begin{figure}[htb]
 	\centerline{\includegraphics[width=0.7\textwidth]{compare-Euclidean-to-Fst}}
-	\caption{Comparing $F_{ST}$ to the squared Euclidean distance on the PCA space between centers of pairs of the 26 1000G populations. \label{fig:compare-dist2}}
+	\caption{Comparing $F_{ST}$ to the squared Euclidean distance on the PCA space (i.e.\ using PC scores$^\dag$) between centers of pairs of the 26 1000G populations. \label{fig:compare-dist2}}
 \end{figure}
 
 Previously, we and others proposed to use (robust) Mahalanobis distances to infer ancestry or identify a single homogeneous group of individuals \cite[]{peterson2017utility,prive2020efficient}. 
@@ -106,7 +107,7 @@ When using more PCs (8, 16 or 25) to compute the distances, results remain mostl
 
 We project the dataset of interest onto the PCA space of the 1000G data using the fast tools developed in \cite{prive2020efficient}.
 We recall that this uses an automatic removal of LD when computing PCA and a correction for shrinkage in projected PC scores, which has been shown to be particularly important when using PC scores for ancestry estimation \cite[]{zhang2020fast}. 
-Based on the results from the previous section, we propose to assign individual ancestry to one of the 26 1000G populations based on the Euclidean distance to these reference population centers (geometric medians$^\dag$) in the PCA space. 
+Based on the results from the previous section, we propose to assign individual ancestry to one of the 26 1000G populations based on the Euclidean distance to these reference population centers in the PCA space (geometric medians$^\dag$ of PC scores$^\dag$). 
 Since we showed previously that (squared) distances in the PCA space are proportional to $F_{ST}$, we can set a threshold on these distances that would correspond approximately to an $F_{ST}$ of e.g.\ 0.002. This threshold is close to the dissimilarity between Spanish and Italian people ($F_{ST}$(IBS, TSI) of 0.0015).
 When an individual is not close enough to any of the 26 1000G populations, we leave its ancestry inference as unknown, otherwise we assign this individual to the closest reference population center.
 
@@ -169,12 +170,15 @@ Based on the previous clustering and the available sample sizes, we choose to us
 Only 2.8\% of all individuals could not be matched to one of these eight groups (Table \ref{tab:country-groups}).
 The resulting clusters are presented in the PCA space in figure \ref{fig:grouping2}.
 Note that these clusters probably include individuals from nearby countries as well.
+Moreover, more clusters could probably be defined, e.g.\ the individuals with large values for PC6 in figure \ref{fig:grouping2} seem to originate from South America with many people from Colombia, Chile, Mexico, Peru, Ecuador, Venezuela, Bolivia, Brazil, and Argentina.
+However, here we decide to restrict to large enough clusters (e.g.\ with more than 1000 individuals).
+The cluster with small values for PC4 corresponds to Ashkenazi ancestry, and is described in the main text.
 
 \input{../tables/country-groups}
 
 \begin{figure}[p]
 	\centerline{\includegraphics[width=0.9\textwidth]{UKBB-matched-country}}
-	\caption{The first eight PC scores computed from the UK Biobank (Field 22009) colored by the homogeneous ancestry group we infer for these individuals. \label{fig:grouping2}}
+	\caption{The first eight PC scores$^\dag$ computed from the UK Biobank (Field 22009) colored by the homogeneous ancestry group we infer for these individuals. \label{fig:grouping2}}
 \end{figure}
 
 Finally, when we know that the data is composed of a predominant ancestry, we can define a single homogeneous cluster by simply restricting to individuals who are close enough to the overall center of all individuals (Figure \ref{fig:hist3}).
